@@ -16,7 +16,7 @@ class Program
         Console.WriteLine(text);
         CancellationTokenSource cts = new CancellationTokenSource();
         CancellationToken ctoken = cts.Token;
-        string modelUrl = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
+        string modelUrl = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx/";
         string modelPath = "bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
         var answerTask = new BertModel(modelUrl, modelPath, ctoken);
         await answerTask.Create();

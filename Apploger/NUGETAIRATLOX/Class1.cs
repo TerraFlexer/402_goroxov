@@ -18,8 +18,8 @@ namespace NuGetAnswering
         CancellationToken cancelToken;
         public BertModel(string url, string path, CancellationToken token = default)
         {
-            modelpath = url;
-            modelurl = path;
+            modelpath = path;
+            modelurl = url;
             cancelToken = token;
 
         }
@@ -93,9 +93,6 @@ namespace NuGetAnswering
                 try
                 {
                     var client = new HttpClient();
-                    client.Timeout = TimeSpan.FromMinutes(5);
-                    var response = await client.GetAsync(modelurl);
-                    response.EnsureSuccessStatusCode();
                     using var stream = await client.GetStreamAsync(modelurl);
                     using var fileStream = new FileStream(modelpath, FileMode.CreateNew);
                     await stream.CopyToAsync(fileStream);
