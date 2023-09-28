@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleApp1": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\gameh\\source\\repos\\Apploger\\Apploger\\hobbit.txt"
+    }
+  }
+}
