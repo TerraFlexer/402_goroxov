@@ -15,21 +15,23 @@ class Program
         string text = ReadFile(FilePath);
         Console.WriteLine(text);
         CancellationTokenSource cts = new CancellationTokenSource();
-        CancellationToken cancelToken = cts.Token;
+        CancellationToken ctoken = cts.Token;
         string modelUrl = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
         string modelPath = "bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
-        var answerTask = new BertModel(modelUrl, modelPath, cancelToken);
+        var answerTask = new BertModel(modelUrl, modelPath, ctoken);
         await answerTask.Create();
         var tasks = new List<Task>();
-        while (!cancelToken.IsCancellationRequested)
+        while (!ctoken.IsCancellationRequested)
         {
             Console.Write("Ask a question or press enter to exit: ");
             string question = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(question))
+            {
                 cts.Cancel();
+            }
 
-            var task = answerTask.GetAnswerAsync(text, question).ContinueWith(task => { Console.WriteLine(question + " : " + task.Result); });
+            var task = answerTask.answer(text, question).ContinueWith(task => { Console.WriteLine(question + " : " + task.Result); });
             tasks.Add(task);
 
         }

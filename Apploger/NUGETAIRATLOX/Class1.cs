@@ -12,29 +12,28 @@ namespace NuGetAnswering
     public class BertModel
     {
         private static InferenceSession session;
-        private static string modelUrl;
-        private static string modelPath;
-        private readonly object locker = new object();
+        private static string modelurl;
+        private static string modelpath;
         static public Queue<string> progress = new Queue<string>();
         CancellationToken cancelToken;
-        public BertModel(string modelUrlTemp, string modelPathTemp, CancellationToken cancelTokenTemp = default)
+        public BertModel(string url, string path, CancellationToken token = default)
         {
-            modelPath = modelPathTemp;
-            modelUrl = modelUrlTemp;
-            cancelToken = cancelTokenTemp;
+            modelpath = url;
+            modelurl = path;
+            cancelToken = token;
 
         }
         public async Task Create()
         {
-            if (!File.Exists(modelPath))
+            if (!File.Exists(modelpath))
             {
                 await DownloadModelWithRetryAsync();
             }
-            session = new InferenceSession(modelPath);
+            session = new InferenceSession(modelpath);
         }
 
 
-        public Task<string> GetAnswerAsync(string text, string question)
+        public Task<string> answer(string text, string question)
         {
             return Task.Factory.StartNew(() => {
                 try
@@ -95,10 +94,10 @@ namespace NuGetAnswering
                 {
                     var client = new HttpClient();
                     client.Timeout = TimeSpan.FromMinutes(5);
-                    var response = await client.GetAsync(modelUrl);
+                    var response = await client.GetAsync(modelurl);
                     response.EnsureSuccessStatusCode();
-                    using var stream = await client.GetStreamAsync(modelUrl);
-                    using var fileStream = new FileStream(modelPath, FileMode.CreateNew);
+                    using var stream = await client.GetStreamAsync(modelurl);
+                    using var fileStream = new FileStream(modelpath, FileMode.CreateNew);
                     await stream.CopyToAsync(fileStream);
                     return;
                 }
@@ -119,6 +118,7 @@ namespace NuGetAnswering
         public static Tensor<long> ConvertToTensor(long[] inputArray, int inputDimension)
         {
             Tensor<long> input = new DenseTensor<long>(new[] { 1, inputDimension });
+
             for (var i = 0; i < inputArray.Length; i++)
             {
                 input[0, i] = inputArray[i];
