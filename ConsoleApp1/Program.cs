@@ -16,23 +16,34 @@ class Program
         Console.WriteLine(text);
         CancellationTokenSource cts = new CancellationTokenSource();
         CancellationToken ctoken = cts.Token;
-        string modelUrl = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx/";
-        string modelPath = "bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
-        var answerTask = new BertModel(modelUrl, modelPath, ctoken);
+        var answerTask = new BertModel(ctoken);
         await answerTask.Create();
         var tasks = new List<Task>();
         while (!ctoken.IsCancellationRequested)
         {
-            Console.Write("Ask a question or press enter to exit: ");
+            try
+            {
+                Console.Write("Ask a question or press enter to exit: ");
             string question = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(question))
             {
                 cts.Cancel();
+                ctoken.ThrowIfCancellationRequested();
             }
-
-            var task = answerTask.answer(text, question).ContinueWith(task => { Console.WriteLine(question + " : " + task.Result); });
-            tasks.Add(task);
+                var task = answerTask.answer(text, question).ContinueWith(task => { Console.WriteLine(question + " : " + task.Result); });
+                tasks.Add(task);
+            }
+            catch (OperationCanceledException) {
+                Console.ForegroundColor = ConsoleColor.Red; // устанавливаем цвет
+                Console.WriteLine("Operation was cancelled");
+                Console.ResetColor();
+            }
+            catch (Exception ex) {
+                Console.ForegroundColor = ConsoleColor.Red; // устанавливаем цвет
+                Console.WriteLine(ex.Message);
+                Console.ResetColor();
+            }
 
         }
         await Task.WhenAll(tasks);

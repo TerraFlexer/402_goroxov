@@ -12,14 +12,12 @@ namespace NuGetAnswering
     public class BertModel
     {
         private static InferenceSession session;
-        private static string modelurl;
-        private static string modelpath;
+        private static string modelurl = "https://storage.yandexcloud.net/dotnet4/bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
+        private static string modelpath = "bert-large-uncased-whole-word-masking-finetuned-squad.onnx";
         static public Queue<string> progress = new Queue<string>();
         CancellationToken cancelToken;
-        public BertModel(string url, string path, CancellationToken token = default)
+        public BertModel(CancellationToken token = default)
         {
-            modelpath = path;
-            modelurl = url;
             cancelToken = token;
 
         }
@@ -36,9 +34,6 @@ namespace NuGetAnswering
         public Task<string> answer(string text, string question)
         {
             return Task.Factory.StartNew(() => {
-                try
-                {
-                    cancelToken.ThrowIfCancellationRequested();
                     var sentence = "{\"question\": \"" + question + "\", \"context\": \"@CTX\"}".Replace("@CTX", text);
                     var tokenizer = new BertUncasedLargeTokenizer();
                     var tokens = tokenizer.Tokenize(sentence);
@@ -57,13 +52,11 @@ namespace NuGetAnswering
                                                             NamedOnnxValue.CreateFromTensor("input_mask", attention_mask),
                                                             NamedOnnxValue.CreateFromTensor("segment_ids", token_type_ids) };
 
-                    cancelToken.ThrowIfCancellationRequested();
                     IDisposableReadOnlyCollection<DisposableNamedOnnxValue>? output;
                     lock (session)
                     {
                         output = session.Run(input);
                     }
-                    cancelToken.ThrowIfCancellationRequested();
 
                     List<float> startLogits = (output.ToList().First().Value as IEnumerable<float>).ToList();
                     List<float> endLogits = (output.ToList().Last().Value as IEnumerable<float>).ToList();
@@ -77,11 +70,7 @@ namespace NuGetAnswering
                                 .ToList();
 
                     var answer = String.Join(" ", predictedTokens);
-                    cancelToken.ThrowIfCancellationRequested();
                     return answer;
-                }
-                catch (OperationCanceledException) { return "Operation was cancelled"; }
-                catch (Exception ex) { return ex.Message; }
             }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
         }
