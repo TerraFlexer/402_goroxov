@@ -25,7 +25,14 @@ namespace NuGetAnswering
         {
             if (!File.Exists(modelpath))
             {
-                await DownloadModelWithRetryAsync();
+                try
+                {
+                    await DownloadModelWithRetryAsync();
+                }
+                catch
+                {
+                    throw;
+                }
             }
             session = new InferenceSession(modelpath);
         }
@@ -90,7 +97,10 @@ namespace NuGetAnswering
                 catch (Exception ex)
                 {
                     ind ++;
-                    throw;
+                    if (ind == maxr)
+                    {
+                        throw;
+                    }
                 }
             }
         }
