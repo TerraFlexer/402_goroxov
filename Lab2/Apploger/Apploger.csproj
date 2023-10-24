@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>AppLoger</PackageId>
+    <Title>AppLoger</Title>
+    <Authors>Sergey Gorokov</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BERTTokenizers" Version="1.2.0" />
+    <PackageReference Include="Microsoft.ML" Version="2.0.1" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.16.0" />
+  </ItemGroup>
+
+</Project>
