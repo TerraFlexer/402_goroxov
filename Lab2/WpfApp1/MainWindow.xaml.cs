@@ -42,8 +42,6 @@ namespace WpfApp1
             try
             {
                 await bertModel.Create();
-                // Модель успешно загружена, активируйте интерфейс
-                // Например, разблокируйте кнопку загрузки файла
                 chatHistoryTextBox.Text += "Модель загружена\n";
             }
             catch (Exception ex)
