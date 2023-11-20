@@ -20,6 +20,8 @@ using Database;
 using static System.Net.Mime.MediaTypeNames;
 using Database.DAL;
 using DataBase;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Path = System.IO.Path;
 
 namespace WpfApp1
 {
@@ -29,6 +31,7 @@ namespace WpfApp1
         CancellationTokenSource cts;
         CancellationToken ctoken;
         string fileContent;
+        int file_id;
 
         public MainWindow()
         {
@@ -91,8 +94,26 @@ namespace WpfApp1
 
                 fileContent = ReadFile(selectedFilePath);
 
+                string filename = Path.GetFileName(selectedFilePath);
+
                 chatHistoryTextBox.Text += "Система: Текст из файла успешно загружен.\nЕго содержимое:\n";
                 chatHistoryTextBox.Text += fileContent + "\n";
+                using (var context = new DataBaseContext())
+                {
+                    var exist_file = context.Files.FirstOrDefault(t => t.FileName == filename);
+                    if (exist_file != null)
+                    {
+                        file_id = exist_file.ID;
+                    }
+                    else
+                    {
+                        var file_element = new FileText() { FileName = filename };
+                        context.Files.Add(file_element);
+                        file_id = file_element.ID;
+                        context.SaveChanges();
+                        /*chatHistoryTextBox.Text += file_element.FileName + file_element.ID + "\n";*/
+                    }
+                }
             }
         }
 
@@ -115,7 +136,7 @@ namespace WpfApp1
                 string answer = "";
                 using (var context = new DataBaseContext())
                 {
-                    var exist_answer = context.QA.FirstOrDefault(t => t.Question == userQuestion);
+                    var exist_answer = context.QA.FirstOrDefault(t => t.Question == userQuestion && t.FileID == file_id);
 
                     if (exist_answer != null)
                     {
@@ -125,7 +146,7 @@ namespace WpfApp1
                     {
                         answer = await bertModel.answer(fileContent, userQuestion);
 
-                        var qa_element = new QuestionAnswer() { Question = userQuestion, Answer = answer };
+                        var qa_element = new QuestionAnswer() { Question = userQuestion, Answer = answer, FileID = file_id };
                         context.QA.Add(qa_element);
                         context.SaveChanges();
                     }

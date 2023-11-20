@@ -18,6 +18,7 @@ namespace Database.DAL
         }
 
         public DbSet<QuestionAnswer> QA { get; set; }
+        public DbSet<FileText> Files { get; set; }
 
         public string DbPath { get; }
 
